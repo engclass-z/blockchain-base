@@ -7,7 +7,7 @@ const GENESIS_DATA = {
   hash: 'hash-one',
   difficulty: INITIAL_DIFFICULTY,
   nonce: 0,
-  data: [],
+  data: []
 };
 
 const STARTING_BALANCE = 1000;
@@ -21,5 +21,5 @@ module.exports = {
   MINE_RATE,
   STARTING_BALANCE,
   REWARD_INPUT,
-  MINING_REWARD,
+  MINING_REWARD
 };

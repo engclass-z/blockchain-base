@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Button } from 'react-bootstrap';
-
 import Transaction from './Transaction';
 
 class Block extends Component {
@@ -14,6 +13,7 @@ class Block extends Component {
     const { data } = this.props.block;
 
     const stringifiedData = JSON.stringify(data);
+
     const dataDisplay = stringifiedData.length > 35 ?
       `${stringifiedData.substring(0, 35)}...` :
       stringifiedData;
@@ -24,15 +24,15 @@ class Block extends Component {
           {
             data.map(transaction => (
               <div key={transaction.id}>
-                <hr/>
+                <hr />
                 <Transaction transaction={transaction} />
               </div>
             ))
           }
-          <br/>
+          <br />
           <Button
-            variant="danger"
-            size="small"
+            bsStyle="danger"
+            bsSize="small"
             onClick={this.toggleTransaction}
           >
             Show Less
@@ -45,8 +45,8 @@ class Block extends Component {
       <div>
         <div>Data: {dataDisplay}</div>
         <Button
-          variant="danger"
-          size="small"
+          bsStyle="danger"
+          bsSize="small"
           onClick={this.toggleTransaction}
         >
           Show More
@@ -58,17 +58,16 @@ class Block extends Component {
   render() {
     const { timestamp, hash } = this.props.block;
 
-    const hashDisplay = `${hash.substring(0, 15)}...`
+    const hashDisplay = `${hash.substring(0, 15)}...`;
 
     return (
-      <div className="Block">
+      <div className='Block'>
         <div>Hash: {hashDisplay}</div>
-        <div>Timestamp: {new Date(timestamp).toLocaleDateString()}</div>
-
+        <div>Timestamp: {new Date(timestamp).toLocaleString()}</div>
         {this.displayTransaction}
       </div>
     );
   }
-}
+};
 
 export default Block;

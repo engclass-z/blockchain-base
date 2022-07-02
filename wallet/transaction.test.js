@@ -1,9 +1,7 @@
-const { REWARD_INPUT, MINING_REWARD } = require('../config');
-
 const Transaction = require('./transaction');
 const Wallet = require('./index');
-
 const { verifySignature } = require('../util');
+const { REWARD_INPUT, MINING_REWARD } = require('../config');
 
 describe('Transaction', () => {
   let transaction, senderWallet, recipient, amount;
@@ -56,7 +54,7 @@ describe('Transaction', () => {
         verifySignature({
           publicKey: senderWallet.publicKey,
           data: transaction.outputMap,
-          signature: transaction.input.signature,
+          signature: transaction.input.signature
         })
       ).toBe(true);
     });
@@ -99,66 +97,68 @@ describe('Transaction', () => {
   });
 
   describe('update()', () => {
-    let originalSignature, originalSenderOutputAmount, nextRecipient, nextAmount;
+    let originalSignature, originalSenderOutput, nextRecipient, nextAmount;
 
     describe('and the amount is invalid', () => {
       it('throws an error', () => {
         expect(() => {
           transaction.update({
             senderWallet, recipient: 'foo', amount: 999999
-          });
+          })
         }).toThrow('Amount exceeds balance');
       });
     });
 
-    describe('and the amount id valid', () => {
+    describe('and the amount is valid', () => {
       beforeEach(() => {
         originalSignature = transaction.input.signature;
-        originalSenderOutputAmount = transaction.outputMap[senderWallet.publicKey];
+        originalSenderOutput = transaction.outputMap[senderWallet.publicKey];
         nextRecipient = 'next-recipient';
         nextAmount = 50;
-
-        transaction.update({ senderWallet, recipient: nextRecipient, amount: nextAmount });
+  
+        transaction.update({
+          senderWallet, recipient: nextRecipient, amount: nextAmount
+        });
       });
-
+  
       it('outputs the amount to the next recipient', () => {
         expect(transaction.outputMap[nextRecipient]).toEqual(nextAmount);
       });
-
+  
       it('subtracts the amount from the original sender output amount', () => {
         expect(transaction.outputMap[senderWallet.publicKey])
-          .toEqual(originalSenderOutputAmount - nextAmount);
+          .toEqual(originalSenderOutput - nextAmount);
       });
-
+  
       it('maintains a total output that matches the input amount', () => {
         expect(
           Object.values(transaction.outputMap)
             .reduce((total, outputAmount) => total + outputAmount)
         ).toEqual(transaction.input.amount);
       });
-
+  
       it('re-signs the transaction', () => {
         expect(transaction.input.signature).not.toEqual(originalSignature);
       });
 
-      describe('and another update for same recipient', () => {
+      describe('and another update for the same recipient', () => {
         let addedAmount;
 
         beforeEach(() => {
           addedAmount = 80;
           transaction.update({
-            senderWallet, recipient: nextRecipient, amount: addedAmount,
+            senderWallet, recipient: nextRecipient, amount: addedAmount
           });
         });
 
-        it('added to the recipient amount', () => {
+        it('adds to the recipient amount', () => {
           expect(transaction.outputMap[nextRecipient])
             .toEqual(nextAmount + addedAmount);
         });
 
-        it('subtracts the amount from the original sender output', () => {
+        it('subtracts the amount from the original sender output amount', () => {
           expect(transaction.outputMap[senderWallet.publicKey])
-            .toEqual(originalSenderOutputAmount - nextAmount - addedAmount);
+            .toEqual(originalSenderOutput - nextAmount - addedAmount);
         });
       });
     });
@@ -176,7 +176,7 @@ describe('Transaction', () => {
       expect(rewardTransaction.input).toEqual(REWARD_INPUT);
     });
 
-    it('creates ones transaction for the miner with the `MINING_REWARD`', () => {
+    it('creates one transaction for the miner with the `MINING_REWARD`', () => {
       expect(rewardTransaction.outputMap[minerWallet.publicKey]).toEqual(MINING_REWARD);
     });
   });

@@ -1,8 +1,6 @@
-const { REWARD_INPUT, MINING_REWARD } = require('../config');
-
-const { v1: uuid } = require('uuid');
-
+const uuid = require('uuid/v1');
 const { verifySignature } = require('../util');
+const { REWARD_INPUT, MINING_REWARD } = require('../config');
 
 class Transaction {
   constructor({ senderWallet, recipient, amount, outputMap, input }) {
@@ -25,7 +23,7 @@ class Transaction {
       timestamp: Date.now(),
       amount: senderWallet.balance,
       address: senderWallet.publicKey,
-      signature: senderWallet.sign(outputMap),
+      signature: senderWallet.sign(outputMap)
     };
   }
 
@@ -37,10 +35,11 @@ class Transaction {
     if (!this.outputMap[recipient]) {
       this.outputMap[recipient] = amount;
     } else {
-      this.outputMap[recipient] += amount;
+      this.outputMap[recipient] = this.outputMap[recipient] + amount;
     }
 
-    this.outputMap[senderWallet.publicKey] -= amount;
+    this.outputMap[senderWallet.publicKey] =
+      this.outputMap[senderWallet.publicKey] - amount;
 
     this.input = this.createInput({ senderWallet, outputMap: this.outputMap });
   }
@@ -50,6 +49,7 @@ class Transaction {
 
     const outputTotal = Object.values(outputMap)
       .reduce((total, outputAmount) => total + outputAmount);
+
     if (amount !== outputTotal) {
       console.error(`Invalid transaction from ${address}`);
       return false;
@@ -66,7 +66,7 @@ class Transaction {
   static rewardTransaction({ minerWallet }) {
     return new this({
       input: REWARD_INPUT,
-      outputMap: { [minerWallet.publicKey]: MINING_REWARD },
+      outputMap: { [minerWallet.publicKey]: MINING_REWARD }
     });
   }
 }

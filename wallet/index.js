@@ -1,7 +1,5 @@
-const { STARTING_BALANCE } = require('../config');
-
 const Transaction = require('./transaction');
-
+const { STARTING_BALANCE } = require('../config');
 const { ec, cryptoHash } = require('../util');
 
 class Wallet {
@@ -14,14 +12,14 @@ class Wallet {
   }
 
   sign(data) {
-    return this.keyPair.sign(cryptoHash(data));
+    return this.keyPair.sign(cryptoHash(data))
   }
 
   createTransaction({ recipient, amount, chain }) {
     if (chain) {
       this.balance = Wallet.calculateBalance({
         chain,
-        address: this.publicKey,
+        address: this.publicKey
       });
     }
 
@@ -47,7 +45,7 @@ class Wallet {
         const addressOutput = transaction.outputMap[address];
 
         if (addressOutput) {
-          outputsTotal += addressOutput;
+          outputsTotal = outputsTotal + addressOutput;
         }
       }
 
@@ -58,6 +56,6 @@ class Wallet {
 
     return hasConductedTransaction ? outputsTotal : STARTING_BALANCE + outputsTotal;
   }
-}
+};
 
 module.exports = Wallet;

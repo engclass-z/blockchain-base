@@ -1,11 +1,16 @@
-import React, { Component } from 'react'
-import { Form, Button } from 'react-bootstrap';
+import React, { Component } from 'react';
+import { FormGroup, FormControl, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-
 import history from '../history';
 
 class ConductTransaction extends Component {
-  state = { recipient: '', amount: 0 };
+  state = { recipient: '', amount: 0, knownAddresses: [] };
+
+  componentDidMount() {
+    fetch(`${document.location.origin}/api/known-addresses`)
+      .then(response => response.json())
+      .then(json => this.setState({ knownAddresses: json }));
+  }
 
   updateRecipient = event => {
     this.setState({ recipient: event.target.value });
@@ -18,12 +23,10 @@ class ConductTransaction extends Component {
   conductTransaction = () => {
     const { recipient, amount } = this.state;
 
-    fetch('/api/transact', {
+    fetch(`${document.location.origin}/api/transact`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ recipient, amount }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipient, amount })
     }).then(response => response.json())
       .then(json => {
         alert(json.message || json.type);
@@ -32,35 +35,42 @@ class ConductTransaction extends Component {
   }
 
   render() {
-    console.log('this.state', this.state);
-
     return (
-      <div className="ConductTransaction">
-        <Link to="/">Home</Link>
-
+      <div className='ConductTransaction'>
+        <Link to='/'>Home</Link>
         <h3>Conduct a Transaction</h3>
-
-        <Form.Group>
-          <Form.Control
-            input="text"
-            placeholder="recipient"
+        <br />
+        <h4>Known Addresses</h4>
+        {
+          this.state.knownAddresses.map(knownAddress => {
+            return (
+              <div key={knownAddress}>
+                <div>{knownAddress}</div>
+                <br />
+              </div>
+            );
+          })
+        }
+        <br />
+        <FormGroup>
+          <FormControl
+            input='text'
+            placeholder='recipient'
             value={this.state.recipient}
             onChange={this.updateRecipient}
           />
-        </Form.Group>
-
-        <Form.Group>
-          <Form.Control
-            input="number"
-            placeholder="amount"
+        </FormGroup>
+        <FormGroup>
+          <FormControl
+            input='number'
+            placeholder='amount'
             value={this.state.amount}
             onChange={this.updateAmount}
           />
-        </Form.Group>
-
+        </FormGroup>
         <div>
           <Button
-            variant="danger"
+            bsStyle="danger"
             onClick={this.conductTransaction}
           >
             Submit
@@ -69,6 +79,6 @@ class ConductTransaction extends Component {
       </div>
     )
   }
-}
+};
 
-export default ConductTransaction
+export default ConductTransaction;

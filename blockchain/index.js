@@ -1,19 +1,17 @@
+const Block = require('./block');
+const Transaction = require('../wallet/transaction');
+const Wallet = require('../wallet');
+const { cryptoHash } = require('../util');
 const { REWARD_INPUT, MINING_REWARD } = require('../config');
 
-const Block = require('./block');
-const Wallet = require('../wallet');
-const Transaction = require('../wallet/transaction');
-
-const { cryptoHash } = require('../util');
-
-class Index {
+class Blockchain {
   constructor() {
     this.chain = [Block.genesis()];
   }
 
   addBlock({ data }) {
     const newBlock = Block.mineBlock({
-      lastBlock: this.chain[this.chain.length - 1],
+      lastBlock: this.chain[this.chain.length-1],
       data
     });
 
@@ -26,8 +24,8 @@ class Index {
       return;
     }
 
-    if (!Index.isValidChain(chain)) {
-      console.error('The incoming chain must bb valid');
+    if (!Blockchain.isValidChain(chain)) {
+      console.error('The incoming chain must be valid');
       return;
     }
 
@@ -37,7 +35,6 @@ class Index {
     }
 
     if (onSuccess) onSuccess();
-
     console.log('replacing chain with', chain);
     this.chain = chain;
   }
@@ -69,7 +66,7 @@ class Index {
 
           const trueBalance = Wallet.calculateBalance({
             chain: this.chain,
-            address: transaction.input.add,
+            address: transaction.input.address
           });
 
           if (transaction.input.amount !== trueBalance) {
@@ -92,19 +89,20 @@ class Index {
 
   static isValidChain(chain) {
     if (JSON.stringify(chain[0]) !== JSON.stringify(Block.genesis())) {
-      return false;
-    }
+      return false
+    };
 
     for (let i=1; i<chain.length; i++) {
       const { timestamp, lastHash, hash, nonce, difficulty, data } = chain[i];
-
       const actualLastHash = chain[i-1].hash;
+      const lastDifficulty = chain[i-1].difficulty;
+
       if (lastHash !== actualLastHash) return false;
 
       const validatedHash = cryptoHash(timestamp, lastHash, data, nonce, difficulty);
+
       if (hash !== validatedHash) return false;
 
-      const lastDifficulty = chain[i-1].difficulty;
       if (Math.abs(lastDifficulty - difficulty) > 1) return false;
     }
 
@@ -112,4 +110,4 @@ class Index {
   }
 }
 
-module.exports = Index;
+module.exports = Blockchain;
